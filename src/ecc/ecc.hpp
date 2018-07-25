@@ -21,6 +21,9 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef NINTY_233_ECC_HPP
+#define NINTY_233_ECC_HPP
+
 typedef uint32_t element[8];
 
 typedef struct {
@@ -88,3 +91,5 @@ void os_to_elem(const uint8_t * os, element elem);
 void os_to_point(const uint8_t * os, ec_point & point);
 void elem_to_os(const element src, uint8_t * output_os);
 void point_to_os(const ec_point & src, uint8_t * output_os);
+
+#endif

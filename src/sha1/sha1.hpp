@@ -17,8 +17,8 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SHA1_HPP_
-#define _SHA1_HPP_
+#ifndef NINTY_233_SHA1_HPP
+#define NINTY_233_SHA1_HPP
 
 #ifndef __cplusplus
 #error Do not include this header in a C project
