@@ -110,51 +110,51 @@ void gf2m_to_mpz(const element src, mpz_t dst) {
 
 void sha1(const uint8_t * input, uint32_t input_length, unsigned ique_flag, mpz_t hash_out) {
     SHA1_HASH hash;
-	Sha1Context context;
+    Sha1Context context;
 	
-	Sha1Initialise(&context);
-	Sha1Update(&context, input, input_length);
+    Sha1Initialise(&context);
+    Sha1Update(&context, input, input_length);
     if (ique_flag) {
         // When performing certain hashes, the iQue Player updates the
         // SHA1 state with the following magic data.
         uint8_t ique_magic[4] = { 0x06, 0x09, 0x19, 0x68 };
         Sha1Update(&context, &ique_magic, 4);
     }
-	Sha1Finalise(&context, &hash);
+    Sha1Finalise(&context, &hash);
 
     mpz_import(hash_out, 20, 1, sizeof(hash.bytes[0]), 0, 0, (void *)hash.bytes);
 }
 
 void ecdh(const element private_key, const ec_point * public_key, ec_point * shared_secret_output) {	
-	ec_point_mul(private_key, public_key, shared_secret_output);
+    ec_point_mul(private_key, public_key, shared_secret_output);
 }
 
 void ecdsa_sign(const mpz_t z, const element private_key, element r_out, element s_out) {
     mpz_t r, s, n, D, zero, k, x_p, k_inv, med;
     init_mpz_list(9, r, s, n, D, zero, k, x_p, k_inv, med);
     
-	gf2m_to_mpz(G_ORDER, n);
-	gf2m_to_mpz(private_key, D);
+    gf2m_to_mpz(G_ORDER, n);
+    gf2m_to_mpz(private_key, D);
     gf2m_set_zero(r_out);
     gf2m_set_zero(s_out);
     
-	while(!mpz_cmp(r, zero) || !mpz_cmp(s, zero)) {
-		// Generate k in [1, n - 1]
+    while(!mpz_cmp(r, zero) || !mpz_cmp(s, zero)) {
+        // Generate k in [1, n - 1]
         generate_k(n, z, k);
-		element k_elem;
-		mpz_to_gf2m(k, k_elem);
-		
-		// Calculate P = kG
-		ec_point G, P;
-		gf2m_copy(G_X, G.x);
-		gf2m_copy(G_Y, G.y);
-		ec_point_mul(k_elem, &G, &P);
-		
-		// Calculate r = x_p mod n
-		gf2m_to_mpz(P.x, x_p);
+        element k_elem;
+        mpz_to_gf2m(k, k_elem);
+
+        // Calculate P = kG
+        ec_point G, P;
+        gf2m_copy(G_X, G.x);
+        gf2m_copy(G_Y, G.y);
+        ec_point_mul(k_elem, &G, &P);
+	
+        // Calculate r = x_p mod n
+        gf2m_to_mpz(P.x, x_p);
         mpz_mod(r, x_p, n);
 		
-		// Calculate s = k^-1(z + rD) mod n
+        // Calculate s = k^-1(z + rD) mod n
         if (mpz_invert(k_inv, k, n) == 0) {
             fprintf(stderr, "An error occurred while calculating the inverse of k mod n.\n");
             fprintf(stderr, "The resulting signature will be invalid!\n");
@@ -165,9 +165,9 @@ void ecdsa_sign(const mpz_t z, const element private_key, element r_out, element
         
         mpz_mul(s, k_inv, med);
         mpz_mod(s, s, n);
-	}
-	mpz_to_gf2m(r, r_out);
-	mpz_to_gf2m(s, s_out);
+    }
+    mpz_to_gf2m(r, r_out);
+    mpz_to_gf2m(s, s_out);
     
     clear_mpz_list(9, r, s, n, D, zero, k, x_p, k_inv, med);
 }
@@ -179,16 +179,16 @@ int ecdsa_verify(const mpz_t z, const ec_point * public_key, const element r_inp
 
 	// If Q is the identity, Q is invalid
 	if (gf2m_is_equal(Q.x, zero) && gf2m_is_equal(Q.y, zero)) {
-		return 0;
+        return 0;
 	}
 	// If Q is not a point on the curve, Q is invalid
 	if (!ec_point_on_curve(&Q)) {
-		return 0;
+        return 0;
 	}
 	// If nQ is not the identity, Q is invalid (or n is messed up)
 	ec_point_mul(G_ORDER, &Q, &test);
 	if (!(gf2m_is_equal(test.x, zero) && gf2m_is_equal(test.y, zero))) {
-		return 0;
+        return 0;
 	}
     
 	// Public key is valid, now verify signature...
